@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Safety Alert Entry</string>
+    <string name="alert_title_tip">Alert Title</string>
+    <string name="alert_desc_tip">Alert Description</string>
+    <string name="alert_location_tip">Alert Location</string>
+    <string name="alert_level_tip">Alert Level (1 to 5)</string>
+    <string name="alert_radius_tip">Alert Radius (km)</string>
+</resources>
