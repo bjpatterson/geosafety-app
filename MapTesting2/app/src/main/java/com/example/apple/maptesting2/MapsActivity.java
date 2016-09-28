@@ -48,7 +48,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GoogleMap mMap;
     private static final String Pull_URL = "http://10.64.83.126/alertPull.php";
     private static final String REGISTER_URL = "http://10.64.83.126/volleyPost.php";
-    private static final LatLng BALL_STATE = new LatLng(40.2011, -85.4070);
+    private static final LatLng BALL_STATE = new LatLng(40, -85);
     private List<Marker> markers;
     private String selectedMarkerID;
     Circle circle;
