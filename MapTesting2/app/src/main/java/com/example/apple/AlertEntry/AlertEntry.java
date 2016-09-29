@@ -1,4 +1,4 @@
-package com.example.apple.maptesting2;
+package com.example.apple.AlertEntry;
 
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -7,9 +7,9 @@ import android.location.Geocoder;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -25,6 +25,7 @@ import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.apple.maptesting2.R;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -43,15 +44,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
+public class AlertEntry extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
 
     private GoogleMap mMap;
-    private static final String BASE_URL = "http://10.64.83.126";
-    private static final String Pull_URL = BASE_URL + "/alertPull.php";
+    private static final String BASE_URL = "http://10.230.120.9";
+    private static final String PULL_URL = BASE_URL + "/alertPull.php";
     private static final String REGISTER_URL = BASE_URL + "/volleyPost.php";
     private static final LatLng BALL_STATE = new LatLng(40, -85);
     private List<Marker> markers;
-    private String selectedMarkerID;
     Circle circle;
     Marker marker;
     Geocoder geocoder;
@@ -90,13 +90,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         mMap = googleMap;
         geocoder = new Geocoder(this);
-        // Add a marker in Sydney and move the camera
+
         this.mMap.setOnMarkerClickListener(this);
-//        LatLng sydney = new LatLng(-34, 151);
-//        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-//        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
         mMap.getUiSettings().setZoomControlsEnabled(true);
-        this.zoomToLocation(this.BALL_STATE, 15);
+        this.zoomToLocation(BALL_STATE, 15);
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) ==
                 PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true);
@@ -120,9 +117,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 if (address != null) {
                     StringBuilder sb = new StringBuilder();
                     for (int i = 0; i < address.getMaxAddressLineIndex(); i++) {
-                        sb.append(address.getAddressLine(i) + "\n");
+                        sb.append(address.getAddressLine(i)).append("\n");
                     }
-                    Toast.makeText(MapsActivity.this, sb.toString(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(AlertEntry.this, sb.toString(), Toast.LENGTH_LONG).show();
                     locationTextField.setText(sb.toString());
                 }
 
@@ -146,36 +143,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     public void onSubmit(View view) {
+        Log.d("MAP", "pressed submit button!");
         EditText locationTextField = (EditText) findViewById(R.id.address);
+        EditText locationRadiusField = (EditText) findViewById(R.id.alertRadius);
         EditText crimeTypeField = (EditText) findViewById(R.id.alertType);
+        EditText alertLevelField = (EditText) findViewById(R.id.alertlevel);
+
         String location = locationTextField.getText().toString();
-        final String type = crimeTypeField.getText().toString();
-        EditText locationradius = (EditText) findViewById(R.id.alertRadius);
-        double setradius = Double.parseDouble(locationradius.getText().toString());
-        EditText alertlevel = (EditText) findViewById(R.id.alertlevel);
-        final String levelnumber = alertlevel.getText().toString();
-        if (location != null && !location.equals("") && type != null && !type.equals("")) {
+        final String title = crimeTypeField.getText().toString();
+        final String radius = locationRadiusField.getText().toString();
+        final String alertLevel = alertLevelField.getText().toString();
+
+        if (!location.equals("") && !title.equals("")) {
             List<Address> locationArray = null;
             Geocoder coder = new Geocoder(this);
             try {
                 locationArray = coder.getFromLocationName(location, 3);
             } catch (IOException e) {
-
+                Log.e("MAP", "something went wrong", e);
             }
-            if (!locationArray.isEmpty()) {
+            if (locationArray != null && !locationArray.isEmpty()) {
                 // database should add this event!
                 final String currentTime = DateFormat.getDateTimeInstance().format(new Date());
                 final Address address = locationArray.get(0);
                 final LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
-                this.addMarker(latLng, type, "Happened at " + currentTime);
+                this.addMarker(latLng, title, "Happened at " + currentTime);
 
-                this.zoomToLocation(latLng, 16);
+                this.zoomToLocation(latLng, 12);
                 //setMarkers(latLng,setradius,type);
                 StringRequest stringRequest = new StringRequest(Request.Method.POST, REGISTER_URL,
                         new Response.Listener<String>() {
                             @Override
                             public void onResponse(String response) {
-                                Toast.makeText(MapsActivity.this, response, Toast.LENGTH_LONG).show();
+                                Toast.makeText(AlertEntry.this, response, Toast.LENGTH_LONG).show();
                             }
                         },
                         new Response.ErrorListener() {
@@ -197,11 +197,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     @Override
                     protected Map<String, String> getParams() {
                         Map<String, String> params = new HashMap<>();
-                        params.put("DescribeEvents", type);
+                        params.put("DescribeEvents", title);
                         params.put("Latitude", Double.toString(address.getLatitude()));
                         params.put("Longtitude", Double.toString(address.getLongitude()));
                         params.put("CurrentTimeEvents", currentTime);
-                        params.put("Level", levelnumber);
+                        params.put("Level", alertLevel);
+                        params.put("Radius", radius);
                         System.out.println("This map param: " + params);
                         return params;
                     }
@@ -227,43 +228,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public boolean onMarkerClick(final Marker marker) {
-        this.selectedMarkerID = marker.getId();
-        System.out.println(this.selectedMarkerID + " Marker is Selected");
+        String selectedMarkerID = marker.getId();
+        System.out.println(selectedMarkerID + " Marker is Selected");
         marker.showInfoWindow();
         return true;
     }
 
     public void onSearch(View view) {
+        Log.d("MAP", "pressed search button!");
         EditText locationTextField = (EditText) findViewById(R.id.address);
-        String location = locationTextField.getText().toString();
-        EditText locationradius = (EditText) findViewById(R.id.alertRadius);
+        EditText locationRadiusField = (EditText) findViewById(R.id.alertRadius);
         EditText crimeTypeField = (EditText) findViewById(R.id.alertType);
+        EditText alertlevelField = (EditText) findViewById(R.id.alertlevel);
+
+        String location = locationTextField.getText().toString();
         String title = crimeTypeField.getText().toString();
-        double setradius = Double.parseDouble(locationradius.getText().toString());
-        EditText alertlevel = (EditText) findViewById(R.id.alertlevel);
-        double levelnumber = Double.parseDouble(alertlevel.getText().toString());
-        if (location != null && !location.equals("")) {
+        double radius = Double.parseDouble(locationRadiusField.getText().toString());
+        double alertLevel = Double.parseDouble(alertlevelField.getText().toString());
+
+        if (!location.equals("")) {
             List<Address> locationArray = null;
             Geocoder coder = new Geocoder(this);
             try {
                 locationArray = coder.getFromLocationName(location, 3);
             } catch (IOException e) {
-
+                Log.e("MAP", "something went wrong", e);
             }
-            if (!locationArray.isEmpty()) {
+            if (locationArray != null && !locationArray.isEmpty()) {
                 final Address address = locationArray.get(0);
                 final LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
 
-                //this.addMarker(latLng, type, "Happened at "+currentTime);
-                //Add a marker
-                this.zoomToLocation(latLng, 16);
-                setMarkers(latLng, setradius, title, levelnumber);
-//                MarkerOptions options = new MarkerOptions()
-//                        .position(latLng)
-//                        .title(title);
-//                marker = mMap.addMarker(options);
+                this.zoomToLocation(latLng, 12);
+                setMarkers(latLng, radius, title, alertLevel);
             }
-
         }
     }
 
@@ -287,86 +284,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         marker = mMap.addMarker(options);
     }
 
-    public Circle drawCirle(LatLng latLng, double radius, double levelnumber) {
+    public Circle drawCirle(LatLng latLng, double radius, double levelNumber) {
         if (circle != null) {
             circle.remove();
         }
-        int x1 = 0;
-        if (levelnumber == 1) {
-            x1 = 0x33ffff00;
+        int color = 0;
+        if (levelNumber == 1) {
+            color = getResources().getColor(R.color.colorAlertLevel1);
         }
-        if (levelnumber == 2) {
-            x1 = 0x330000ff;
+        if (levelNumber == 2) {
+            color = getResources().getColor(R.color.colorAlertLevel2);
         }
-        if (levelnumber == 3) {
-            x1 = 0x33ff0000;
+        if (levelNumber == 3) {
+            color = getResources().getColor(R.color.colorAlertLevel3);
         }
         CircleOptions options = new CircleOptions()
                 .center(latLng)
-                .radius(radius)
-                .fillColor(x1)
-                .strokeColor(Color.BLUE)
+                .radius(radius*1000) // convert km to m
+                .fillColor(color)
+                .strokeColor(Color.GRAY)
                 .strokeWidth(3);
         return mMap.addCircle(options);
-    }
-
-    public void onPull(View view) {
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, Pull_URL,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        Toast.makeText(MapsActivity.this, response, Toast.LENGTH_LONG).show();
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        if (error instanceof TimeoutError || error instanceof NoConnectionError) {
-                            Toast.makeText(getApplicationContext(), "Communication Error!", Toast.LENGTH_SHORT).show();
-                        } else if (error instanceof AuthFailureError) {
-                            Toast.makeText(getApplicationContext(), "Authentication Error!", Toast.LENGTH_SHORT).show();
-                        } else if (error instanceof ServerError) {
-                            Toast.makeText(getApplicationContext(), "Server Side Error!", Toast.LENGTH_SHORT).show();
-                        } else if (error instanceof NetworkError) {
-                            Toast.makeText(getApplicationContext(), "Network Error!", Toast.LENGTH_SHORT).show();
-                        } else if (error instanceof ParseError) {
-                            Toast.makeText(getApplicationContext(), "Parse Error!", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                }) {
-            @Override
-            protected Map<String, String> getParams() {
-                Map<String, String> params = new HashMap<>();
-                params.get("DescribeEvents");
-                params.get("Latitude");
-                params.get("Longtitude");
-                params.get("CurrentTimeEvents");
-                params.get("Level");
-                System.out.println("This map param: " + params);
-                return params;
-            }
-        };
-        stringRequest.setRetryPolicy(new DefaultRetryPolicy(
-                10000,
-                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-        System.out.println(stringRequest + " string request");
-        RequestQueue requestQueue = Volley.newRequestQueue(this);
-        requestQueue.add(stringRequest);
-
-    }
-    public void onDelete(View view){
-        System.out.println("on delete here "+this.selectedMarkerID);
-        if (this.selectedMarkerID != null){
-            for(int i=0; i<this.markers.size(); i++){
-                if(this.markers.get(i).getId().equals(this.selectedMarkerID)){
-                    // Database should delete this event
-                    this.markers.get(i).remove();
-                    this.markers.remove(i);
-                    this.selectedMarkerID = null;
-                    System.out.println("Removed");
-                }
-            }
-        }
     }
 }
