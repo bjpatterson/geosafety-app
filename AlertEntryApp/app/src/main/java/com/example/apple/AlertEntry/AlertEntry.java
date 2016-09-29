@@ -56,12 +56,7 @@ public class AlertEntry extends FragmentActivity implements OnMapReadyCallback, 
     Marker marker;
     Geocoder geocoder;
 
-    //    EditText locationTextField = (EditText)findViewById(R.id.address);
-//    String location = locationTextField.getText().toString();
-//    EditText locationradius = (EditText)findViewById(R.id.alertRadius);
-//    EditText crimeTypeField = (EditText)findViewById(R.id.alertType);
-//    String type = crimeTypeField.getText().toString();
-//    double setradius = Double.parseDouble(locationradius.getText().toString());
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
