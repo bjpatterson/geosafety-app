@@ -13,14 +13,6 @@
         android:layout_height="match_parent"
         tools:context="edu.bsu.junhongxu.admin.MapsActivity" />
 
-    <!--<RelativeLayout-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="80sp"-->
-        <!--android:layout_alignParentBottom="true"-->
-    <!--&gt;-->
-
-    <!--</RelativeLayout>-->
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="200sp"
