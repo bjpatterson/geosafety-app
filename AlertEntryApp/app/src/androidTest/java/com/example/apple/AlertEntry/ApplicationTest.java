@@ -1,4 +1,4 @@
-package com.example.apple.maptesting2;
+package com.example.apple.AlertEntry;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;
