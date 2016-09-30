@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">AlertReceiver</string>
+    <string name="title_activity_alert_map">Alerts Near You</string>
+</resources>
