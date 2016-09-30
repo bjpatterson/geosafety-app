@@ -31,7 +31,7 @@
             android:value="@string/google_maps_key" />
 
         <activity
-            android:name=".AlertPullevens"
+            android:name=".AlertPullEvents"
             android:label="@string/title_activity_alert_pull">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
