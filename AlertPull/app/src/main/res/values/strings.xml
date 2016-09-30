@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">AlertPull</string>
+    <string name="title_activity_alert_pull">Map</string>
+</resources>
